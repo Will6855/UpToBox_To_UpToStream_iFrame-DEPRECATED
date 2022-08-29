@@ -24,8 +24,8 @@ chrome_options.add_experimental_option("excludeSwitches", ['enable-automation'])
 chrome_options.add_experimental_option("detach", True) #Let browser open until manually closed
 
 
-uBlock = normpath(join(os.getcwd(), r'UpToBox_To_UpToStream_iFrame\1.44.0_1.crx'))
-VeePN = normpath(join(os.getcwd(), r'UpToBox_To_UpToStream_iFrame\2.5.1_0.crx'))
+uBlock = str.replace(os.path.realpath(__file__), 'UpToStream.py', '1.44.0_1.crx')
+VeePN = str.replace(os.path.realpath(__file__), 'UpToStream.py', '2.5.1_0.crx')
 chrome_options.add_extension(uBlock) #Add Ublock Origin
 chrome_options.add_extension(VeePN) #Add VeePN
 
@@ -33,6 +33,9 @@ delay = 5 #seconds
 
 driver = webdriver.Chrome(service=s, options=chrome_options)
 driver.maximize_window()
+
+sleep(3)
+driver.switch_to.window(driver.window_handles[1]) #Go to VeePN Pop-Up
 
 driver.get('chrome-extension://majdfhpaihoncoakbjgbdhglocklcgno/html/foreground.html')
 try:
@@ -56,11 +59,11 @@ try:
     print("Page is ready!")
 except TimeoutException:
     print("Loading took too much time!")
-sleep(0.5)
 element = driver.find_element(By.XPATH, '//*[@id="mainBtn"]/span')
 element.click()
-second_driver = webdriver.Chrome()
 
+driver.close()
+driver.switch_to.window(driver.window_handles[0]) #Go back to original tab
 
 # Display GUI
 app = Tk()
