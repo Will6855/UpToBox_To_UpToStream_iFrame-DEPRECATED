@@ -24,8 +24,8 @@ chrome_options.add_experimental_option("excludeSwitches", ['enable-automation'])
 chrome_options.add_experimental_option("detach", True) #Let browser open until manually closed
 
 
-uBlock = normpath(join(os.getcwd(), r'UpToStream_Faster2\1.44.0_1.crx'))
-VeePN = normpath(join(os.getcwd(), r'UpToStream_Faster2\2.5.1_0.crx'))
+uBlock = normpath(join(os.getcwd(), r'UpToBox_To_UpToStream_iFrame\1.44.0_1.crx'))
+VeePN = normpath(join(os.getcwd(), r'UpToBox_To_UpToStream_iFrame\2.5.1_0.crx'))
 chrome_options.add_extension(uBlock) #Add Ublock Origin
 chrome_options.add_extension(VeePN) #Add VeePN
 
