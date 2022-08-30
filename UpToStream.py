@@ -1,5 +1,4 @@
 import os
-from posixpath import join, normpath
 from time import sleep
 
 # Chrome Browser
