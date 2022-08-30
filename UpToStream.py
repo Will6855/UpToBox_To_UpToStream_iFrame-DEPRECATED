@@ -1,5 +1,4 @@
 import os
-from time import sleep
 
 # Chrome Browser
 from selenium import webdriver
@@ -33,7 +32,7 @@ delay = 5 #seconds
 driver = webdriver.Chrome(service=s, options=chrome_options)
 driver.maximize_window()
 
-sleep(3)
+WebDriverWait(driver, delay).until(EC.number_of_windows_to_be(2))
 driver.switch_to.window(driver.window_handles[1]) #Go to VeePN Pop-Up
 
 driver.get('chrome-extension://majdfhpaihoncoakbjgbdhglocklcgno/html/foreground.html')
@@ -42,24 +41,31 @@ try:
     print("Page is ready!")
 except TimeoutException:
     print("Loading took too much time!")
-element = driver.find_element(By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button')
-element.click()
+driver.find_element(By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button').click()
 
 try:
     WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button')))
     print("Page is ready!")
 except TimeoutException:
     print("Loading took too much time!")
-element = driver.find_element(By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button')
-element.click()
+driver.find_element(By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button').click()
 
 try:
     WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, '//*[@id="mainBtn"]/span')))
     print("Page is ready!")
 except TimeoutException:
     print("Loading took too much time!")
-element = driver.find_element(By.XPATH, '//*[@id="mainBtn"]/span')
-element.click()
+driver.find_element(By.XPATH, '//*[@id="mainBtn"]/span').click()
+
+driver.get('https://uptobox.com/login')
+try:
+    WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, '//*[@id="login-form"]/input[1]')))
+    print("Page is ready!")
+except TimeoutException:
+    print("Loading took too much time!")
+driver.find_element(By.XPATH, '//*[@id="login-form"]/input[1]').send_keys('UpToStream_Free')
+driver.find_element(By.XPATH, '//*[@id="login-form"]/input[2]').send_keys('UpToStream_Free!')
+driver.find_element(By.XPATH, '//*[@id="login-form"]/div/button').click()
 
 driver.close()
 driver.switch_to.window(driver.window_handles[0]) #Go back to original tab
