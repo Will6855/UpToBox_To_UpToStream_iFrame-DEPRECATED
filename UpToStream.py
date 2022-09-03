@@ -1,89 +1,69 @@
 import os
+import sys
 
 # Chrome Browser
-from selenium import webdriver
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
+from selenium import webdriver as WD
+from selenium.webdriver.chrome.service import Service as S
 from selenium.webdriver.common.by import By
-
-from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support.ui import WebDriverWait as WDW
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
-# GUI
-from tkinter import *
+# Module to remove command prompt
+from subprocess import CREATE_NO_WINDOW
 
 # Chrome Browser's options
-s=Service(ChromeDriverManager().install())
+s=S(str.replace(os.path.realpath(__file__), 'UpToStream.py', 'chromedriver.exe'))
+o = WD.ChromeOptions()
+s.creationflags = CREATE_NO_WINDOW # Remove command prompt
+o.add_argument('start-maximized')
+o.add_experimental_option("prefs", {"credentials_enable_service": False, "profile.password_manager_enabled": False}) # Disable "Save Password" Pop-Up
+o.add_experimental_option("excludeSwitches", ['enable-automation']) #Get rid of "Chrome is being controlled by automated test software"
+o.add_experimental_option("detach", True) #Let browser open until manually closed
+o.add_extension(str.replace(os.path.realpath(__file__), 'UpToStream.py', '1.44.0_1.crx')) #Add Ublock Origin
+o.add_extension(str.replace(os.path.realpath(__file__), 'UpToStream.py', '2.5.1_0.crx')) #Add VeePN
 
-chrome_options = webdriver.ChromeOptions()
+# Set delay
+t = 10
 
-chrome_options.add_experimental_option("excludeSwitches", ['enable-automation']) #Get rid of "Chrome is being controlled by automated test software"
-chrome_options.add_experimental_option("detach", True) #Let browser open until manually closed
-
-
-uBlock = str.replace(os.path.realpath(__file__), 'UpToStream.py', '1.44.0_1.crx')
-VeePN = str.replace(os.path.realpath(__file__), 'UpToStream.py', '2.5.1_0.crx')
-chrome_options.add_extension(uBlock) #Add Ublock Origin
-chrome_options.add_extension(VeePN) #Add VeePN
-
-delay = 5 #seconds
-
-driver = webdriver.Chrome(service=s, options=chrome_options)
-driver.maximize_window()
-
-WebDriverWait(driver, delay).until(EC.number_of_windows_to_be(2))
-driver.switch_to.window(driver.window_handles[1]) #Go to VeePN Pop-Up
-
-driver.get('chrome-extension://majdfhpaihoncoakbjgbdhglocklcgno/html/foreground.html')
+# Launch Chrome
+d = WD.Chrome(service=s, options=o)
 try:
-    WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button')))
-    print("Page is ready!")
-except TimeoutException:
-    print("Loading took too much time!")
-driver.find_element(By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button').click()
+    # Account connection to UpToBox.com
+    d.get('https://uptobox.com/login')
+    WDW(d, t).until(EC.presence_of_element_located((By.XPATH, '//*[@id="login-form"]/input[1]')))
+    d.find_element(By.XPATH, '//*[@id="login-form"]/input[1]').send_keys('UpToStream_Free') # Username
+    d.find_element(By.XPATH, '//*[@id="login-form"]/input[2]').send_keys('UpToStream_Free!') # Password
+    d.find_element(By.XPATH, '//*[@id="login-form"]/div/button').click() # Connection
 
-try:
-    WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button')))
-    print("Page is ready!")
-except TimeoutException:
-    print("Loading took too much time!")
-driver.find_element(By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button').click()
+    # Go to VeePN extension and connection
+    d.get('chrome-extension://majdfhpaihoncoakbjgbdhglocklcgno/html/foreground.html')
+    for _ in range(2):
+        try:
+            WDW(d, t).until(EC.presence_of_element_located((By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button')))
+        except:
+            TimeoutException()
+        d.find_element(By.XPATH, '//*[@id="screen-tooltips-template"]/div[2]/div/div[3]/div/div/button').click()
+    WDW(d, t).until(EC.presence_of_element_located((By.XPATH, '//*[@id="mainBtn"]/span')))
+    d.find_element(By.XPATH, '//*[@id="mainBtn"]/span').click()
 
-try:
-    WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, '//*[@id="mainBtn"]/span')))
-    print("Page is ready!")
-except TimeoutException:
-    print("Loading took too much time!")
-driver.find_element(By.XPATH, '//*[@id="mainBtn"]/span').click()
+    # Go to Uptobox.live
+    d.get('https://uptobox.live')
+    try:
+        WDW(d, t).until(EC.presence_of_element_located((By.XPATH, '//*[@id="search-result"]/tbody/tr/td[1]/small/a')))
+    except:
+        TimeoutException()
 
-driver.get('https://uptobox.com/login')
-try:
-    WebDriverWait(driver, delay).until(EC.presence_of_element_located((By.XPATH, '//*[@id="login-form"]/input[1]')))
-    print("Page is ready!")
-except TimeoutException:
-    print("Loading took too much time!")
-driver.find_element(By.XPATH, '//*[@id="login-form"]/input[1]').send_keys('UpToStream_Free')
-driver.find_element(By.XPATH, '//*[@id="login-form"]/input[2]').send_keys('UpToStream_Free!')
-driver.find_element(By.XPATH, '//*[@id="login-form"]/div/button').click()
+    # Transform all links
+    while True:
+        try:
+            for elem in d.find_elements(By.XPATH, "//small/a[@href]"): # Element in Elements
+                new_url = str(elem.get_attribute("href")).replace('uptobox.com', 'uptostream.com/iframe')
+                d.execute_script(f"arguments[0].href = '{new_url}'", elem)
+                d.execute_script(f"arguments[0].innerText = '{new_url}'", elem)
+        except:
+            WDW(d, t).until(EC.presence_of_element_located((By.XPATH, '//*[@id="search-result"]/tbody')))
 
-driver.close()
-driver.switch_to.window(driver.window_handles[0]) #Go back to original tab
-
-# Display GUI
-app = Tk()
-app.title("UpToBox To UpToStream")
-
-def replace():
-    url = url1.get()
-    url = str.replace(url, 'uptobox.com', 'uptostream.com/iframe')
-    app.quit()
-    driver.get(url)
-
-url1 = Entry(app, text='Enter UpToBox URL:')
-url1.pack()
-
-button = Button(app, text = 'Watch!', command = replace)
-button.pack()
-
-app.mainloop()
+except:
+    d.quit()
+    sys.exit()
